@@ -14,16 +14,17 @@ datasource db {
 }
 
 model User {
-  id          String    @id @default(cuid())
-  displayName String
-  icon        String
-  phone       String?
-  isDeleted   Boolean   @default(false)
-  isBlocked   Boolean   @default(false)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  deletedAt   DateTime?
-  account     Account[]
+  id               String             @id @default(cuid())
+  displayName      String
+  icon             String
+  phone            String?
+  isDeleted        Boolean            @default(false)
+  isBlocked        Boolean            @default(false)
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  deletedAt        DateTime?
+  account          Account[]
+  UserAccessTokens UserAccessTokens[]
 }
 
 model Account {
@@ -40,6 +41,18 @@ model Account {
   updatedAt         DateTime    @updatedAt
 
   user User @relation(fields: [userId], references: [id])
+}
+
+model UserAccessTokens {
+  index     Int      @id @default(autoincrement())
+  userId    String
+  platform  String
+  access    String
+  refresh   String
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@unique([userId, platform])
 }
 
 enum AccountType {

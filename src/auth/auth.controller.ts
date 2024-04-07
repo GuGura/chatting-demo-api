@@ -3,6 +3,7 @@ import {
   Controller,
   Post,
   Req,
+  Res,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -25,8 +26,13 @@ export class AuthController {
   constructor(private authService: AuthService) {}
   @UseGuards(LocalAuthGuard)
   @Post('sign-in')
-  async login(@Body() dto: LoginDto) {
-    return this.authService.login(dto);
+  async login(@Req() req, @Res() res) {
+    const result = await this.authService.login(
+      req.user,
+      req.headers['user-agent'],
+    );
+    await this.authService.setTokenToHttpOnlyCookie(res, result);
+    res.send(result.user);
   }
 
   @Post('sign-up')
@@ -69,12 +75,23 @@ export class AuthController {
       },
     }),
   )
-  async register(@Body() dto: RegisterDto, @UploadedFile() file) {
+  async register(
+    @Body() dto: RegisterDto,
+    @UploadedFile() file,
+    @Req() req,
+    @Res() res,
+  ) {
     const data = {
       ...dto,
       icon: file?.key,
     };
     console.log('file::', file);
     const newUser = await this.authService.register(data);
+    const result = await this.authService.login(
+      newUser,
+      req.headers['user-agent'],
+    );
+    await this.authService.setTokenToHttpOnlyCookie(res, result);
+    res.send(result.user);
   }
 }
