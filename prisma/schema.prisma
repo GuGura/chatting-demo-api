@@ -14,16 +14,16 @@ datasource db {
 }
 
 model User {
-  id        String    @id @default(cuid())
-  name      String
-  icon      String
-  phone     String?
-  isDeleted Boolean   @default(false)
-  isBlocked Boolean   @default(false)
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  deletedAt DateTime?
-  Account   Account[]
+  id          String    @id @default(cuid())
+  displayName String
+  icon        String
+  phone       String?
+  isDeleted   Boolean   @default(false)
+  isBlocked   Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+  Account     Account[]
 }
 
 model Account {

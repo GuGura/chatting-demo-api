@@ -8,5 +8,5 @@ export class RegisterDto {
   readonly email: string;
 
   @IsString()
-  readonly password: string;
+  password: string;
 }

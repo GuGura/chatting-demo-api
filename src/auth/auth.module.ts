@@ -7,6 +7,7 @@ import { LocalStrategy } from './strategy/local.strategy';
 import { JwtModule } from '@nestjs/jwt';
 import { jwtConstants } from './strategy/constants';
 import { JwtStrategy } from './strategy/jwt.strategy';
+import { PrismaService } from '../prisma/prisma.service';
 
 @Module({
   imports: [

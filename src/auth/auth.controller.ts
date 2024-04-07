@@ -47,9 +47,9 @@ export class AuthController {
         bucket: 'chatting',
         key(req, file, cb) {
           const fileName = generateFileName();
-          const date = format(new Date(), 'yyyy-MM-dd');
+          const date = format(new Date(), 'yyyy-MM').split('-');
           const ext = extname(file.originalname);
-          cb(null, `upload/chat/${date}${fileName}${ext}`);
+          cb(null, `upload/user/${date[0]}/${date[1]}/${fileName}${ext}`);
         },
       }),
       limits: {
@@ -69,11 +69,12 @@ export class AuthController {
       },
     }),
   )
-  async register(
-    @Body() dto: RegisterDto,
-    @UploadedFile() file: Express.Multer.File,
-  ) {
-    console.log(dto);
-    console.log(file);
+  async register(@Body() dto: RegisterDto, @UploadedFile() file) {
+    const data = {
+      ...dto,
+      icon: file?.key,
+    };
+    console.log('file::', file);
+    const newUser = await this.authService.register(data);
   }
 }
