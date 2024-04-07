@@ -14,10 +14,10 @@ import { Public } from './strategy/public.decorator';
 import { RegisterDto } from './dto/register.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { S3Client } from '@aws-sdk/client-s3';
-import * as process from 'process';
 import { generateFileName } from '../util/generate-string.util';
 import { format } from 'date-fns';
 import { extname } from 'path';
+import { LoginDto } from './dto/login.dto';
 
 @Public()
 @Controller('auth')
@@ -25,8 +25,8 @@ export class AuthController {
   constructor(private authService: AuthService) {}
   @UseGuards(LocalAuthGuard)
   @Post('sign-in')
-  async login(@Req() req) {
-    return this.authService.login(req.user);
+  async login(@Body() dto: LoginDto) {
+    return this.authService.login(dto);
   }
 
   @Post('sign-up')

@@ -5,6 +5,7 @@ import { RegisterDto } from './dto/register.dto';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../prisma/prisma.service';
 import { AccountType, Provider } from '@prisma/client';
+import { LoginDto } from './dto/login.dto';
 
 @Injectable()
 export class AuthService {
@@ -14,60 +15,46 @@ export class AuthService {
     private prisma: PrismaService,
   ) {}
 
-  async validateUser(username: string, pass: string): Promise<any> {
-    const user = await this.usersService.findOne(username);
-    if (user && user.password === pass) {
+  async validateUser(email: string, pwd: string): Promise<any> {
+    const user = await this.usersService.findLocalUser(email);
+    const isCompare = await this.compare(pwd, user.password);
+
+    //TODO: isCompare가 false 일 경우 추후 임시패스워드 로직도 추가해야함
+    if (user && isCompare) {
       const { password, ...result } = user;
       return result;
     }
     return null;
   }
-  async login(user: any) {
-    const payload = { username: user.username, sub: user.userId };
+
+  async login(user: LoginDto) {
+    const payload = { username: user.email, sub: user.password };
     return {
       access_token: this.jwtService.sign(payload),
     };
   }
 
   async register(data: any) {
-    const findUser = await this.prisma.account.findFirst({
-      where: {
-        type: AccountType.LOCAL,
-        provider: Provider.EMAIL,
-        oauthIdOrEmail: data.email,
-      },
-    });
+    const findUser = await this.usersService.findLocalUser(data.email);
     if (findUser) {
       throw new BadRequestException('User alReady Exist!');
     }
     data.password = await this.bcrypt(data.password);
-    return this.prisma.user.create({
-      data: {
-        displayName: data.displayName,
-        icon: data?.icon,
-        Account: {
-          create: {
-            type: AccountType.LOCAL,
-            provider: Provider.EMAIL,
-            oauthIdOrEmail: data.email,
-            password: data.password,
-          },
-        },
-      },
-      select: {
-        id: true,
-        displayName: true,
-        Account: {
-          select: {
-            oauthIdOrEmail: true,
-          },
-        },
-      },
-    });
+    const { oauthIdOrEmail, user } =
+      await this.usersService.createLocalUser(data);
+    return {
+      id: user.id,
+      displayName: user.displayName,
+      email: oauthIdOrEmail,
+    };
   }
 
   async bcrypt(password: string) {
     const salt = await bcrypt.genSalt();
     return bcrypt.hash(password, salt);
+  }
+
+  async compare(password, hash) {
+    return bcrypt.compare(password, hash);
   }
 }
