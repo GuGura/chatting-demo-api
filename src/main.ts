@@ -20,4 +20,4 @@ async function bootstrap() {
   await app.listen(3500);
 }
 
-bootstrap();
+bootstrap().then(() => console.log('init...'));
