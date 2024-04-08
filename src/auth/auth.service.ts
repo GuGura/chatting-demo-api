@@ -126,4 +126,25 @@ export class AuthService {
       ...domain,
     });
   }
+
+  logoutHttpOnlyCookie(res: Response) {
+    const domain = {};
+    if (process.env.NODE_ENV === 'production') {
+      domain['domain'] = 'test.net';
+    }
+    res.cookie('access', '', {
+      // httpOnly: true,
+      expires: new Date(Date.now() - 1000),
+      secure: process.env.NODE_ENV === 'production', //HTTPS 사용여부
+      sameSite: 'strict',
+      ...domain,
+    });
+    res.cookie('refresh', '', {
+      httpOnly: true,
+      expires: new Date(Date.now() - 1000),
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      ...domain,
+    });
+  }
 }

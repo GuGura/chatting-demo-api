@@ -18,7 +18,6 @@ import { S3Client } from '@aws-sdk/client-s3';
 import { generateFileName } from '../util/generate-string.util';
 import { format } from 'date-fns';
 import { extname } from 'path';
-import { LoginDto } from './dto/login.dto';
 
 @Public()
 @Controller('auth')
@@ -93,5 +92,13 @@ export class AuthController {
     );
     await this.authService.setTokenToHttpOnlyCookie(res, result);
     res.send(result.user);
+  }
+
+  @Post('logout')
+  async logout(@Res() res) {
+    this.authService.logoutHttpOnlyCookie(res);
+    res.send({
+      message: 'logout',
+    });
   }
 }
