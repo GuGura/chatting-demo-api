@@ -24,6 +24,7 @@ export class AuthService {
         id: user.user.id,
         displayName: user.user.displayName,
         email: user.oauthIdOrEmail,
+        icon: user.user.icon,
       };
     }
     return null;
@@ -50,6 +51,7 @@ export class AuthService {
       id: user.id,
       displayName: user.displayName,
       email: oauthIdOrEmail,
+      icon: user.icon,
     };
   }
 

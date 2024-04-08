@@ -84,7 +84,6 @@ export class AuthController {
       ...dto,
       icon: file?.key,
     };
-    console.log('file::', file);
     const newUser = await this.authService.register(data);
     const result = await this.authService.login(
       newUser,

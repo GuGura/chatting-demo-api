@@ -34,6 +34,7 @@ export class UserService {
           select: {
             id: true,
             displayName: true,
+            icon: true,
           },
         },
         password: true,
@@ -62,6 +63,7 @@ export class UserService {
           select: {
             id: true,
             displayName: true,
+            icon: true,
           },
         },
       },
