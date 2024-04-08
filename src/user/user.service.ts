@@ -53,7 +53,6 @@ export class UserService {
         user: {
           create: {
             displayName: data.displayName,
-            icon: data?.icon,
           },
         },
       },

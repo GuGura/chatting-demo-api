@@ -51,7 +51,7 @@ export class AuthService {
       id: user.id,
       displayName: user.displayName,
       email: oauthIdOrEmail,
-      icon: user.icon,
+      icon: user?.icon,
     };
   }
 
