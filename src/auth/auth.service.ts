@@ -111,7 +111,7 @@ export class AuthService {
     }
 
     res.cookie('access', result.access, {
-      httpOnly: true,
+      // httpOnly: true,
       secure: process.env.NODE_ENV === 'production', //HTTPS 사용여부
       sameSite: 'lax',
       path: '/',
