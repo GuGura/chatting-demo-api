@@ -62,5 +62,6 @@ export class UserController {
   )
   editProfile(@UploadedFile() file, @Req() req) {
     const iconUrl = file?.key;
+    return '';
   }
 }

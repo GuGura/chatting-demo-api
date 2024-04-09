@@ -5,6 +5,7 @@ import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../prisma/prisma.service';
 import * as process from 'process';
 import { Response } from 'express';
+import { SignInDto } from './dto/sign-in.dto';
 
 @Injectable()
 export class AuthService {
@@ -14,9 +15,9 @@ export class AuthService {
     private prisma: PrismaService,
   ) {}
 
-  async validateUser(email: string, pwd: string): Promise<any> {
+  async validateUser({ email, password }: SignInDto): Promise<any> {
     const user = await this.usersService.findLocalUser(email);
-    const isCompare = await this.compare(pwd, user.password);
+    const isCompare = await this.compare(password, user.password);
 
     //TODO: isCompare가 false 일 경우 추후 임시패스워드 로직도 추가해야함
     if (isCompare) {

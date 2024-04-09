@@ -1,23 +1,8 @@
-import {
-  Body,
-  Controller,
-  Post,
-  Req,
-  Res,
-  UploadedFile,
-  UseGuards,
-  UseInterceptors,
-} from '@nestjs/common';
-import * as multerS3 from 'multer-s3';
+import { Body, Controller, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { LocalAuthGuard } from './strategy/local.strategy';
 import { AuthService } from './auth.service';
 import { Public } from './strategy/public.decorator';
-import { RegisterDto } from './dto/register.dto';
-import { FileInterceptor } from '@nestjs/platform-express';
-import { S3Client } from '@aws-sdk/client-s3';
-import { generateFileName } from '../util/generate-string.util';
-import { format } from 'date-fns';
-import { extname } from 'path';
+import { SignUpDto } from './dto/sign-up.dto';
 
 @Public()
 @Controller('auth')
@@ -25,7 +10,7 @@ export class AuthController {
   constructor(private authService: AuthService) {}
   @UseGuards(LocalAuthGuard)
   @Post('sign-in')
-  async login(@Req() req, @Res() res) {
+  async signIn(@Req() req, @Res() res) {
     const result = await this.authService.login(
       req.user,
       req.headers['user-agent'],
@@ -35,7 +20,7 @@ export class AuthController {
   }
 
   @Post('sign-up')
-  async register(@Body() dto: RegisterDto, @Req() req, @Res() res) {
+  async signUp(@Body() dto: SignUpDto, @Req() req, @Res() res) {
     const newUser = await this.authService.register(dto);
     const result = await this.authService.login(
       newUser,
