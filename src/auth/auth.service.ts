@@ -16,8 +16,8 @@ export class AuthService {
   ) {}
 
   async validateUser({ email, password }: SignInDto): Promise<any> {
-    const user = await this.usersService.findLocalUser(email);
-    const isCompare = await this.compare(password, user.password);
+    const user = await this.usersService.findLocalUserByEmail(email);
+    const isCompare = await this.compare(password, user?.password);
 
     //TODO: isCompare가 false 일 경우 추후 임시패스워드 로직도 추가해야함
     if (isCompare) {
@@ -42,9 +42,18 @@ export class AuthService {
   }
 
   async register(data: any) {
-    const findUser = await this.usersService.findLocalUser(data.email);
-    if (findUser) {
-      throw new BadRequestException('User alReady Exist!');
+    const isDuplicateEmail = await this.usersService.findLocalUserByEmail(
+      data.email,
+    );
+    if (isDuplicateEmail) {
+      throw new BadRequestException('duplicate email');
+    }
+    const isDuplicateUsername = await this.usersService.findLocalUserByUsername(
+      data.username,
+    );
+
+    if (isDuplicateUsername) {
+      throw new BadRequestException('duplicate username');
     }
     data.password = await this.bcrypt(data.password);
     const { oauthIdOrEmail, user } =
