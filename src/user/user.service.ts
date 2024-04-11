@@ -18,10 +18,6 @@ export class UserService {
     },
   ];
 
-  async findOne(username: string): Promise<User | undefined> {
-    return this.users.find((user) => user.username === username);
-  }
-
   async findLocalUser(email: string) {
     return this.prisma.account.findFirst({
       where: {
@@ -35,6 +31,7 @@ export class UserService {
             id: true,
             displayName: true,
             icon: true,
+            username: true,
           },
         },
         password: true,
@@ -52,7 +49,7 @@ export class UserService {
         password: data.password,
         user: {
           create: {
-            displayName: data.displayName,
+            username: data.username,
           },
         },
       },
@@ -61,6 +58,7 @@ export class UserService {
         user: {
           select: {
             id: true,
+            username: true,
             displayName: true,
             icon: true,
           },

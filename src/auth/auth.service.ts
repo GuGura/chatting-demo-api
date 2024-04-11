@@ -23,6 +23,7 @@ export class AuthService {
     if (isCompare) {
       return {
         id: user.user.id,
+        username: user.user.username,
         displayName: user.user.displayName,
         email: user.oauthIdOrEmail,
         icon: user.user.icon,
@@ -50,6 +51,7 @@ export class AuthService {
       await this.usersService.createLocalUser(data);
     return {
       id: user.id,
+      username: user.username,
       displayName: user.displayName,
       email: oauthIdOrEmail,
       icon: user?.icon,
