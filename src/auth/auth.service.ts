@@ -161,4 +161,5 @@ export class AuthService {
       ...domain,
     });
   }
+  async refresh(access: string, refresh: string, agent: string) {}
 }
