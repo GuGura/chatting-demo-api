@@ -1,8 +1,8 @@
 import { Controller, Get } from '@nestjs/common';
 import { AppService } from './app.service';
-import { Public } from './auth/strategy/public.decorator';
+import { SkipAuthDecorator } from './auth/strategy/public.decorator';
 
-@Public()
+@SkipAuthDecorator()
 @Controller()
 export class AppController {
   constructor(private readonly appService: AppService) {}

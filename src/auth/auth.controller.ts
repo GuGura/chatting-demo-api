@@ -1,10 +1,10 @@
 import { Body, Controller, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { LocalAuthGuard } from './strategy/local.strategy';
 import { AuthService } from './auth.service';
-import { Public } from './strategy/public.decorator';
+import { SkipAuthDecorator } from './strategy/public.decorator';
 import { SignUpDto } from './dto/sign-up.dto';
 
-@Public()
+@SkipAuthDecorator()
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
@@ -36,5 +36,15 @@ export class AuthController {
     res.send({
       message: 'logout',
     });
+  }
+
+  @SkipAuthDecorator()
+  @Post('refresh')
+  async refresh(@Req() req, @Res() res: Response) {
+    const result = await this.authService.refresh(
+      req.cookie['access'],
+      req.cookie['refresh'],
+      req.headers['user-agent'],
+    );
   }
 }

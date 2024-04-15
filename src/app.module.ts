@@ -7,12 +7,14 @@ import { PrismaModule } from './prisma/prisma.module';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { EventModule } from './event/event.module';
+import { AppGateway } from './app.gateway';
 
 @Module({
   imports: [AuthModule, UserModule, PrismaModule, EventModule],
   controllers: [AppController],
   providers: [
     AppService,
+    AppGateway,
     {
       provide: APP_GUARD,
       useClass: JwtAuthGuard,
