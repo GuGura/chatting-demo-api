@@ -8,6 +8,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { EventModule } from './event/event.module';
 import { AppGateway } from './app.gateway';
+import {JwtService} from "./auth/jwt.service";
 
 @Module({
   imports: [AuthModule, UserModule, PrismaModule, EventModule],
@@ -15,6 +16,7 @@ import { AppGateway } from './app.gateway';
   providers: [
     AppService,
     AppGateway,
+    JwtService,
     {
       provide: APP_GUARD,
       useClass: JwtAuthGuard,

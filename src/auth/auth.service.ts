@@ -1,6 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { UserService } from '../user/user.service';
-import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../prisma/prisma.service';
 import * as process from 'process';
@@ -13,7 +12,6 @@ import { jwtConstants } from './strategy/constants';
 export class AuthService {
   constructor(
     private usersService: UserService,
-    private jwtService: JwtService,
     private prisma: PrismaService,
   ) {}
 
@@ -79,9 +77,12 @@ export class AuthService {
   }
 
   async generateToken(user, agent) {
-    const access = this.jwtService.sign(user);
+    const access = jwt.sign({}, jwtConstants.secret, { expiresIn: '30d' });
     const str = Math.random().toString(36).slice(2, 13);
-    const refresh = jwt.sign(str, jwtConstants.secret, { expiresIn: '1m' });
+    console.log('jwt1')
+    const refresh = jwt.sign({str}, jwtConstants.secret, { expiresIn: '30d' });
+    console.log('jwt2')
+
     const token = await this.prisma.userAccessTokens.findUnique({
       where: {
         userId_platform: {
