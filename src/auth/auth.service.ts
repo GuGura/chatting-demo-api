@@ -6,6 +6,8 @@ import { PrismaService } from '../prisma/prisma.service';
 import * as process from 'process';
 import { Response } from 'express';
 import { SignInDto } from './dto/sign-in.dto';
+import * as jwt from 'jsonwebtoken';
+import { jwtConstants } from './strategy/constants';
 
 @Injectable()
 export class AuthService {
@@ -78,8 +80,8 @@ export class AuthService {
 
   async generateToken(user, agent) {
     const access = this.jwtService.sign(user);
-    const refresh = Math.random().toString(36).slice(2, 13);
-
+    const str = Math.random().toString(36).slice(2, 13);
+    const refresh = jwt.sign(str, jwtConstants.secret, { expiresIn: '1m' });
     const token = await this.prisma.userAccessTokens.findUnique({
       where: {
         userId_platform: {
@@ -161,5 +163,26 @@ export class AuthService {
       ...domain,
     });
   }
-  async refresh(access: string, refresh: string, agent: string) {}
+  async refresh(access: string, refresh: string, agent: string) {
+    console.log('refresh', access, refresh, agent);
+    // access , refresh 존재확인
+    if (!(access && refresh)) {
+      console.log("token isn't exist");
+      throw new BadRequestException("token isn't exist");
+    }
+    // 유효기간 확인
+    const ref = await jwt.verify(refresh, jwtConstants.secret);
+    // 일치여부 확인
+    const token = await this.prisma.userAccessTokens.findFirst({
+      where: {
+        access,
+        refresh,
+      },
+    });
+    if (!!token) {
+      console.log('token is not match');
+      throw new BadRequestException('token is not match');
+    }
+    //
+  }
 }

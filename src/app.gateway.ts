@@ -23,8 +23,8 @@ export class AppGateway
   }
 
   async handleConnection(client: Socket, ...args: any[]) {
-    console.log('client::', client.handshake);
-    console.log('args::', args);
+    // console.log('client::', client.handshake);
+    // console.log('args::', args);
     client.emit('message', 'test');
   }
 }

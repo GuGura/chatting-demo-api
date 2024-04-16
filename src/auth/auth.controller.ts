@@ -41,10 +41,12 @@ export class AuthController {
   @SkipAuthDecorator()
   @Post('refresh')
   async refresh(@Req() req, @Res() res: Response) {
-    const result = await this.authService.refresh(
-      req.cookie['access'],
-      req.cookie['refresh'],
-      req.headers['user-agent'],
-    );
+    console.log('refresh::controller', req.cookie['refresh']);
+
+    // const result = await this.authService.refresh(
+    //   req.cookie['access'],
+    //   req.cookie['refresh'],
+    //   req.headers['user-agent'],
+    // );
   }
 }
