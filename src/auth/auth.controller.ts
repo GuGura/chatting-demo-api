@@ -3,12 +3,13 @@ import { LocalAuthGuard } from './strategy/local.strategy';
 import { AuthService } from './auth.service';
 import { SkipAuthDecorator } from './strategy/public.decorator';
 import { SignUpDto } from './dto/sign-up.dto';
+import { Response } from 'express';
 
-@SkipAuthDecorator()
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
   @UseGuards(LocalAuthGuard)
+  @SkipAuthDecorator()
   @Post('sign-in')
   async signIn(@Req() req, @Res() res) {
     const result = await this.authService.login(
@@ -16,26 +17,26 @@ export class AuthController {
       req.headers['user-agent'],
     );
     await this.authService.setTokenToHttpOnlyCookie(res, result);
-    res.send(result.user);
+    res.status(201).json({ message: 'User successfully sign up' });
   }
 
+  @SkipAuthDecorator()
   @Post('sign-up')
-  async signUp(@Body() dto: SignUpDto, @Req() req, @Res() res) {
+  async signUp(@Body() dto: SignUpDto, @Req() req, @Res() res: Response) {
     const newUser = await this.authService.register(dto);
     const result = await this.authService.login(
       newUser,
       req.headers['user-agent'],
     );
     await this.authService.setTokenToHttpOnlyCookie(res, result);
-    res.send(result.user);
+    res.status(201).json({ message: 'User successfully registered' });
   }
 
+  @SkipAuthDecorator()
   @Post('logout')
   async logout(@Res() res) {
-    this.authService.logoutHttpOnlyCookie(res);
-    res.send({
-      message: 'logout',
-    });
+    await this.authService.removeHttpOnlyCookie(res);
+    res.status(201).json({ message: 'User successfully logout' });
   }
 
   @SkipAuthDecorator()
@@ -48,5 +49,12 @@ export class AuthController {
     //   req.cookie['refresh'],
     //   req.headers['user-agent'],
     // );
+  }
+
+  @Post('sign-out')
+  async signOut(@Req() req, @Res() res: Response) {
+    await this.authService.signOut(req.user);
+    await this.authService.removeHttpOnlyCookie(res);
+    res.status(201).json({ message: 'User successfully sign out' });
   }
 }

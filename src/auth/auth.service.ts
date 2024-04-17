@@ -7,6 +7,7 @@ import { Response } from 'express';
 import { SignInDto } from './dto/sign-in.dto';
 import * as jwt from 'jsonwebtoken';
 import { jwtConstants } from './strategy/constants';
+import now = jest.now;
 
 @Injectable()
 export class AuthService {
@@ -77,11 +78,15 @@ export class AuthService {
   }
 
   async generateToken(user, agent) {
-    const access = jwt.sign({}, jwtConstants.secret, { expiresIn: '30d' });
+    const access = jwt.sign({ user }, jwtConstants.secret, {
+      expiresIn: '30d',
+    });
     const str = Math.random().toString(36).slice(2, 13);
-    console.log('jwt1')
-    const refresh = jwt.sign({str}, jwtConstants.secret, { expiresIn: '30d' });
-    console.log('jwt2')
+    console.log('jwt1');
+    const refresh = jwt.sign({ str }, jwtConstants.secret, {
+      expiresIn: '30d',
+    });
+    console.log('jwt2');
 
     const token = await this.prisma.userAccessTokens.findUnique({
       where: {
@@ -144,7 +149,7 @@ export class AuthService {
     });
   }
 
-  logoutHttpOnlyCookie(res: Response) {
+  removeHttpOnlyCookie(res: Response) {
     const domain = {};
     if (process.env.NODE_ENV === 'production') {
       domain['domain'] = 'test.net';
@@ -185,5 +190,16 @@ export class AuthService {
       throw new BadRequestException('token is not match');
     }
     //
+  }
+  async signOut(user) {
+    await this.prisma.user.update({
+      where: {
+        id: user.id,
+      },
+      data: {
+        isDeleted: true,
+        deletedAt: new Date(),
+      },
+    });
   }
 }
