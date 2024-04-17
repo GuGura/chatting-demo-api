@@ -37,7 +37,6 @@ export class AuthController {
     res.status(201).json({ message: 'User successfully registered' });
   }
 
-  @SkipAuthDecorator()
   @Post('logout')
   async logout(@Res() res) {
     await this.authService.removeHttpOnlyCookie(res);
@@ -48,8 +47,8 @@ export class AuthController {
   @Post('refresh')
   async refresh(@Req() req, @Res() res: Response) {
     const result = await this.jwtService.refresh(
-      req.cookie['access'],
-      req.cookie['refresh'],
+      req.cookies['access'],
+      req.cookies['refresh'],
       req.headers['user-agent'],
     );
     await this.authService.setTokenToHttpOnlyCookie(res, result);
