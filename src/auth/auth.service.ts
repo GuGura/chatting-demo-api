@@ -7,17 +7,24 @@ import { Response } from 'express';
 import { SignInDto } from './dto/sign-in.dto';
 import * as jwt from 'jsonwebtoken';
 import { jwtConstants } from './strategy/constants';
-import now = jest.now;
+import { JwtService } from './jwt.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     private usersService: UserService,
+    private jwtService: JwtService,
     private prisma: PrismaService,
   ) {}
 
   async validateUser({ email, password }: SignInDto): Promise<any> {
+    //활성화된 로컬유저 유무 체크
     const user = await this.usersService.findLocalUserByEmail(email);
+
+    if (!user) {
+      return null;
+    }
+    // 비밀번호 체크
     const isCompare = await this.compare(password, user?.password);
 
     //TODO: isCompare가 false 일 경우 추후 임시패스워드 로직도 추가해야함
@@ -34,7 +41,7 @@ export class AuthService {
   }
 
   async login(user, agent) {
-    const token = await this.generateToken(user, agent);
+    const token = await this.jwtService.getToken(user, agent);
     return {
       user,
       access: token.access,
@@ -77,55 +84,6 @@ export class AuthService {
     return bcrypt.compare(password, hash);
   }
 
-  async generateToken(user, agent) {
-    const access = jwt.sign({ user }, jwtConstants.secret, {
-      expiresIn: '30d',
-    });
-    const str = Math.random().toString(36).slice(2, 13);
-    console.log('jwt1');
-    const refresh = jwt.sign({ str }, jwtConstants.secret, {
-      expiresIn: '30d',
-    });
-    console.log('jwt2');
-
-    const token = await this.prisma.userAccessTokens.findUnique({
-      where: {
-        userId_platform: {
-          userId: user.id,
-          platform: agent,
-        },
-      },
-    });
-
-    if (token) {
-      await this.prisma.userAccessTokens.update({
-        where: {
-          userId_platform: {
-            userId: user.id,
-            platform: agent,
-          },
-        },
-        data: {
-          access,
-          refresh,
-        },
-      });
-    } else {
-      await this.prisma.userAccessTokens.create({
-        data: {
-          userId: user.id,
-          platform: agent,
-          access,
-          refresh,
-        },
-      });
-    }
-
-    return {
-      access,
-      refresh,
-    };
-  }
   async setTokenToHttpOnlyCookie(res: Response, result) {
     const domain = {};
     if (process.env.NODE_ENV === 'production') {
@@ -170,7 +128,6 @@ export class AuthService {
     });
   }
   async refresh(access: string, refresh: string, agent: string) {
-    console.log('refresh', access, refresh, agent);
     // access , refresh 존재확인
     if (!(access && refresh)) {
       console.log("token isn't exist");

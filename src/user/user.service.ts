@@ -24,6 +24,9 @@ export class UserService {
         type: AccountType.LOCAL,
         provider: Provider.EMAIL,
         oauthIdOrEmail: email,
+        user: {
+          isDeleted: false,
+        },
       },
       select: {
         user: {
