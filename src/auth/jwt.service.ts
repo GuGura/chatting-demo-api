@@ -1,4 +1,8 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import * as jwt from 'jsonwebtoken';
 import { jwtConstants } from './strategy/constants';
@@ -79,5 +83,28 @@ export class JwtService {
   /**
    * Refresh Token 요청
    */
-  refresh() {}
+  async refresh(access: string, refresh: string, agent: string) {
+    // 토큰 유무 확인
+    if (!(access && refresh)) {
+      throw new BadRequestException("token isn't exist");
+    }
+    // Refresh Token expired check
+    try {
+      this.verifyToken(refresh, jwtConstants.secret);
+    } catch (e) {
+      throw new BadRequestException('refresh token expired');
+    }
+    // Token 비교
+    const token = await this.prisma.userAccessTokens.findFirst({
+      where: {
+        access,
+        refresh,
+      },
+    });
+    if (!token) {
+      throw new BadRequestException('token not match');
+    }
+    const payload: any = this.getPayload(access);
+    return this.getToken(payload.user, agent);
+  }
 }

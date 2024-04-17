@@ -4,10 +4,15 @@ import { AuthService } from './auth.service';
 import { SkipAuthDecorator } from './strategy/public.decorator';
 import { SignUpDto } from './dto/sign-up.dto';
 import { Response } from 'express';
+import { JwtService } from './jwt.service';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  constructor(
+    private authService: AuthService,
+    private jwtService: JwtService,
+  ) {}
+
   @UseGuards(LocalAuthGuard)
   @SkipAuthDecorator()
   @Post('sign-in')
@@ -42,11 +47,13 @@ export class AuthController {
   @SkipAuthDecorator()
   @Post('refresh')
   async refresh(@Req() req, @Res() res: Response) {
-    // const result = await this.authService.refresh(
-    //   req.cookie['access'],
-    //   req.cookie['refresh'],
-    //   req.headers['user-agent'],
-    // );
+    const result = await this.jwtService.refresh(
+      req.cookie['access'],
+      req.cookie['refresh'],
+      req.headers['user-agent'],
+    );
+    await this.authService.setTokenToHttpOnlyCookie(res, result);
+    res.status(201).json({ message: 'refresh token successfully' });
   }
 
   @Post('sign-out')

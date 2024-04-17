@@ -21,9 +21,6 @@ export class AuthService {
     //활성화된 로컬유저 유무 체크
     const user = await this.usersService.findLocalUserByEmail(email);
 
-    if (!user) {
-      return null;
-    }
     // 비밀번호 체크
     const isCompare = await this.compare(password, user?.password);
 
@@ -81,6 +78,7 @@ export class AuthService {
   }
 
   async compare(password, hash) {
+    if (!hash) return false;
     return bcrypt.compare(password, hash);
   }
 
@@ -149,7 +147,7 @@ export class AuthService {
     //
   }
   async signOut(user) {
-    await this.prisma.user.update({
+    this.prisma.user.update({
       where: {
         id: user.id,
       },
