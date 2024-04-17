@@ -1,7 +1,8 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
+import { PrismaService } from '../../prisma/prisma.service';
 import * as jwt from 'jsonwebtoken';
-import { jwtConstants } from './strategy/constants';
+import {APP_CONFIG} from "../../config";
+
 
 @Injectable()
 export class JwtService {
@@ -29,12 +30,12 @@ export class JwtService {
    * Access, Refresh Token 발급
    */
   async getToken(user, agent) {
-    const access = jwt.sign({ user }, jwtConstants.secret, {
-      expiresIn: '1d',
+    const access = jwt.sign({ user }, APP_CONFIG.jwtSecret, {
+      expiresIn: APP_CONFIG.accessTokenExpires,
     });
     const str = Math.random().toString(36).slice(2, 13);
-    const refresh = jwt.sign({ data: str }, jwtConstants.secret, {
-      expiresIn: '30d',
+    const refresh = jwt.sign({ data: str }, APP_CONFIG.jwtSecret, {
+      expiresIn: APP_CONFIG.refreshTokenExpires,
     });
 
     const token = await this.prisma.userAccessTokens.findUnique({
@@ -86,7 +87,7 @@ export class JwtService {
     }
     // Refresh Token expired check
     try {
-      this.verifyToken(refresh, jwtConstants.secret);
+      this.verifyToken(refresh, APP_CONFIG.jwtSecret);
     } catch (e) {
       throw new UnauthorizedException('refresh token expired');
     }

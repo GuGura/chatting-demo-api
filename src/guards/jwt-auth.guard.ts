@@ -7,8 +7,9 @@ import {
 import { IS_PUBLIC_KEY } from '../auth/strategy/public.decorator';
 import { Reflector } from '@nestjs/core';
 import { Request } from 'express';
-import { JwtService } from '../auth/jwt.service';
-import { jwtConstants } from '../auth/strategy/constants';
+import { JwtService } from '../auth/jwt/jwt.service';
+import {APP_CONFIG} from "../config";
+
 
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
@@ -30,8 +31,6 @@ export class JwtAuthGuard implements CanActivate {
       isSkip ||
       (request.url === '/auth/refresh' && request.method === 'POST')
     ) {
-      console.log(isSkip);
-      console.log(request.url === '/auth/refresh' && request.method === 'POST');
       return true;
     }
     // Access Token verify check
@@ -47,6 +46,6 @@ export class JwtAuthGuard implements CanActivate {
     if (!access) {
       throw new UnauthorizedException('token miss');
     }
-    return this.jwtService.verifyToken(access, jwtConstants.secret);
+    return this.jwtService.verifyToken(access, APP_CONFIG.jwtSecret);
   }
 }

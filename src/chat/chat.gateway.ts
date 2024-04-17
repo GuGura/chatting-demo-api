@@ -3,13 +3,13 @@ import {
   OnGatewayInit,
   OnGatewayConnection,
   OnGatewayDisconnect,
-  WebSocketServer,
+  WebSocketServer, SubscribeMessage, MessageBody,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 
-@WebSocketGateway({ cors: '*' })
-export class AppGateway
-  implements OnGatewayInit, OnGatewayDisconnect, OnGatewayConnection
+@WebSocketGateway({ cors: '*' , namespace:'chat'})
+export class ChatGateway
+    implements OnGatewayInit, OnGatewayDisconnect, OnGatewayConnection
 {
   @WebSocketServer()
   server: Server;
@@ -23,8 +23,11 @@ export class AppGateway
   }
 
   async handleConnection(client: Socket, ...args: any[]) {
-    // console.log('client::', client.handshake);
-    // console.log('args::', args);
     client.emit('message', 'test');
+  }
+
+  @SubscribeMessage('events')
+  handleEvent(@MessageBody() data: string): string {
+    return data;
   }
 }

@@ -5,9 +5,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import * as process from 'process';
 import { Response } from 'express';
 import { SignInDto } from './dto/sign-in.dto';
-import * as jwt from 'jsonwebtoken';
-import { jwtConstants } from './strategy/constants';
-import { JwtService } from './jwt.service';
+import { JwtService } from './jwt/jwt.service';
 
 @Injectable()
 export class AuthService {
@@ -125,27 +123,7 @@ export class AuthService {
       ...domain,
     });
   }
-  async refresh(access: string, refresh: string, agent: string) {
-    // access , refresh 존재확인
-    if (!(access && refresh)) {
-      console.log("token isn't exist");
-      throw new BadRequestException("token isn't exist");
-    }
-    // 유효기간 확인
-    const ref = await jwt.verify(refresh, jwtConstants.secret);
-    // 일치여부 확인
-    const token = await this.prisma.userAccessTokens.findFirst({
-      where: {
-        access,
-        refresh,
-      },
-    });
-    if (!!token) {
-      console.log('token is not match');
-      throw new BadRequestException('token is not match');
-    }
-    //
-  }
+
   async signOut(user) {
     this.prisma.user.update({
       where: {

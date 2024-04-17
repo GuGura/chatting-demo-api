@@ -6,16 +6,14 @@ import { UserModule } from './user/user.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
-import { EventModule } from './event/event.module';
-import { AppGateway } from './app.gateway';
-import {JwtService} from "./auth/jwt.service";
+import {JwtService} from "./auth/jwt/jwt.service";
+import { ChatModule } from './chat/chat.module';
 
 @Module({
-  imports: [AuthModule, UserModule, PrismaModule, EventModule],
+  imports: [AuthModule, UserModule, PrismaModule, ChatModule],
   controllers: [AppController],
   providers: [
     AppService,
-    AppGateway,
     JwtService,
     {
       provide: APP_GUARD,

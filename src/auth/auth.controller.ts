@@ -4,7 +4,7 @@ import { AuthService } from './auth.service';
 import { SkipAuthDecorator } from './strategy/public.decorator';
 import { SignUpDto } from './dto/sign-up.dto';
 import { Response } from 'express';
-import { JwtService } from './jwt.service';
+import { JwtService } from './jwt/jwt.service';
 
 @Controller('auth')
 export class AuthController {
