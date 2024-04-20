@@ -6,7 +6,7 @@ export type User = any;
 export class UserService {
   constructor(private prisma: PrismaService) {}
 
-  async findLocalUserByEmail(email: string) {
+  async findByEmail(email: string) {
     const user = await this.prisma.account.findFirst({
       where: {
         type: AccountType.LOCAL,
@@ -35,25 +35,27 @@ export class UserService {
     return user;
   }
 
-  async findLocalUserByUsername(username: string) {
+  async mailExists(email: string) {
+    const user = await this.prisma.account.findFirst({
+      where: {
+        type: AccountType.LOCAL,
+        provider: Provider.EMAIL,
+        oauthIdOrEmail: email,
+      },
+    });
+    return !!user;
+  }
+  async usernameExists(username: string) {
     const user = await this.prisma.user.findFirst({
       where: {
         username: username,
       },
-      select: {
-        id: true,
-        displayName: true,
-        icon: true,
-        username: true,
-      },
     });
-    if (!user) {
-      return null;
-    }
-    return user;
+
+    return !!user;
   }
 
-  async createLocalUser(data: any) {
+  async createLocal(data: any) {
     return this.prisma.account.create({
       data: {
         type: AccountType.LOCAL,

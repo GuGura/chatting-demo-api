@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { UserService } from '../user/user.service';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../prisma/prisma.service';
@@ -17,10 +17,13 @@ export class AuthService {
 
   async validateUser({ email, password }: SignInDto): Promise<any> {
     //활성화된 로컬유저 유무 체크
-    const user = await this.usersService.findLocalUserByEmail(email);
+    const user = await this.usersService.findByEmail(email);
 
     // 비밀번호 체크
-    const isCompare = await this.compare(password, user?.password);
+    const isCompare: boolean = await this.comparePasswords(
+      password,
+      user?.password,
+    );
 
     //TODO: isCompare가 false 일 경우 추후 임시패스워드 로직도 추가해야함
     if (isCompare) {
@@ -44,23 +47,26 @@ export class AuthService {
     };
   }
 
-  async register(data: any) {
-    const isDuplicateEmail = await this.usersService.findLocalUserByEmail(
-      data.email,
+  async register(newUser: any) {
+    const mailExists: boolean = await this.usersService.mailExists(
+      newUser.email,
     );
-    if (isDuplicateEmail) {
-      throw new BadRequestException('duplicate email');
+    if (mailExists) {
+      throw new HttpException('duplicate email', HttpStatus.BAD_REQUEST);
     }
-    const isDuplicateUsername = await this.usersService.findLocalUserByUsername(
-      data.username,
-    );
 
-    if (isDuplicateUsername) {
-      throw new BadRequestException('duplicate username');
+    const usernameExists: boolean = await this.usersService.usernameExists(
+      newUser.username,
+    );
+    if (usernameExists) {
+      throw new HttpException('duplicate username', HttpStatus.BAD_REQUEST);
     }
-    data.password = await this.bcrypt(data.password);
+
+    newUser.password = await this.hashPassword(newUser.password);
+
     const { oauthIdOrEmail, user } =
-      await this.usersService.createLocalUser(data);
+      await this.usersService.createLocal(newUser);
+
     return {
       id: user.id,
       username: user.username,
@@ -68,16 +74,6 @@ export class AuthService {
       email: oauthIdOrEmail,
       icon: user?.icon,
     };
-  }
-
-  async bcrypt(password: string) {
-    const salt = await bcrypt.genSalt();
-    return bcrypt.hash(password, salt);
-  }
-
-  async compare(password, hash) {
-    if (!hash) return false;
-    return bcrypt.compare(password, hash);
   }
 
   async setTokenToHttpOnlyCookie(res: Response, result) {
@@ -134,5 +130,15 @@ export class AuthService {
         deletedAt: new Date(),
       },
     });
+  }
+
+  private async hashPassword(password: string) {
+    const salt = await bcrypt.genSalt();
+    return bcrypt.hash(password, salt);
+  }
+
+  private async comparePasswords(password, hash) {
+    if (!hash) return false;
+    return bcrypt.compare(password, hash);
   }
 }

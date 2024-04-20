@@ -1,15 +1,15 @@
 import {
   CanActivate,
   ExecutionContext,
+  HttpException,
+  HttpStatus,
   Injectable,
-  UnauthorizedException,
 } from '@nestjs/common';
 import { IS_PUBLIC_KEY } from '../auth/strategy/public.decorator';
 import { Reflector } from '@nestjs/core';
 import { Request } from 'express';
 import { JwtService } from '../auth/jwt/jwt.service';
-import {APP_CONFIG} from "../config";
-
+import { APP_CONFIG } from '../config';
 
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
@@ -44,7 +44,7 @@ export class JwtAuthGuard implements CanActivate {
     const access = request.cookies['access'];
 
     if (!access) {
-      throw new UnauthorizedException('token miss');
+      throw new HttpException('token miss', HttpStatus.UNAUTHORIZED);
     }
     return this.jwtService.verifyToken(access, APP_CONFIG.jwtSecret);
   }

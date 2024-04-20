@@ -1,8 +1,7 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import * as jwt from 'jsonwebtoken';
-import {APP_CONFIG} from "../../config";
-
+import { APP_CONFIG } from '../../config';
 
 @Injectable()
 export class JwtService {
@@ -22,7 +21,7 @@ export class JwtService {
     try {
       return jwt.verify(tokenString, secretKey) as jwt.JwtPayload | string;
     } catch (e) {
-      throw new UnauthorizedException();
+      throw new HttpException('jwt invalid', HttpStatus.UNAUTHORIZED);
     }
   }
 
@@ -83,13 +82,13 @@ export class JwtService {
   async refresh(access: string, refresh: string, agent: string) {
     // 토큰 유무 확인
     if (!(access && refresh)) {
-      throw new UnauthorizedException("token isn't exist");
+      throw new HttpException("token isn't exist", HttpStatus.UNAUTHORIZED);
     }
     // Refresh Token expired check
     try {
       this.verifyToken(refresh, APP_CONFIG.jwtSecret);
     } catch (e) {
-      throw new UnauthorizedException('refresh token expired');
+      throw new HttpException('refresh token expired', HttpStatus.UNAUTHORIZED);
     }
     // Token 비교
     const token = await this.prisma.userAccessTokens.findFirst({
@@ -99,7 +98,7 @@ export class JwtService {
       },
     });
     if (!token) {
-      throw new UnauthorizedException('token not match');
+      throw new HttpException('token not match', HttpStatus.UNAUTHORIZED);
     }
     const payload: any = this.getPayload(access);
     return this.getToken(payload.user, agent);
