@@ -40,12 +40,11 @@ export class EventGateway
 
   @SubscribeMessage('new_user')
   handleNewUser(
-    @MessageBody() username: string,
+    @MessageBody() dto: { message: string; user: string },
     @ConnectedSocket() socket: Socket,
   ) {
     console.log(socket.id);
-    console.log(username);
-    socket.broadcast.emit('user_connected', username);
-    return username;
+    socket.broadcast.emit('user_connected', dto);
+    return dto;
   }
 }
