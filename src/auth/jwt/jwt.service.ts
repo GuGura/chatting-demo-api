@@ -82,13 +82,13 @@ export class JwtService {
   async refresh(access: string, refresh: string, agent: string) {
     // 토큰 유무 확인
     if (!(access && refresh)) {
-      throw new HttpException("token isn't exist", HttpStatus.UNAUTHORIZED);
+      throw new HttpException("token isn't exist", HttpStatus.BAD_REQUEST);
     }
     // Refresh Token expired check
     try {
       this.verifyToken(refresh, APP_CONFIG.jwtSecret);
     } catch (e) {
-      throw new HttpException('refresh token expired', HttpStatus.UNAUTHORIZED);
+      throw new HttpException('refresh token expired', HttpStatus.BAD_REQUEST);
     }
     // Token 비교
     const token = await this.prisma.userAccessTokens.findFirst({
@@ -98,7 +98,7 @@ export class JwtService {
       },
     });
     if (!token) {
-      throw new HttpException('token not match', HttpStatus.UNAUTHORIZED);
+      throw new HttpException('token not match', HttpStatus.BAD_REQUEST);
     }
     const payload: any = this.getPayload(access);
     return this.getToken(payload.user, agent);

@@ -46,13 +46,18 @@ export class AuthController {
   @SkipAuthDecorator()
   @Post('refresh')
   async refresh(@Req() req, @Res() res: Response) {
-    const result = await this.jwtService.refresh(
-      req.cookies['access'],
-      req.cookies['refresh'],
-      req.headers['user-agent'],
-    );
-    await this.authService.setTokenToHttpOnlyCookie(res, result);
-    res.status(201).json({ message: 'refresh token successfully' });
+    try {
+      const result = await this.jwtService.refresh(
+        req.cookies['access'],
+        req.cookies['refresh'],
+        req.headers['user-agent'],
+      );
+      await this.authService.setTokenToHttpOnlyCookie(res, result);
+      res.status(201).json({ message: 'refresh token successfully' });
+    } catch (e) {
+      await this.authService.removeHttpOnlyCookie(res);
+      res.status(200).json({ message: 'refresh token expired' });
+    }
   }
 
   @Post('sign-out')
